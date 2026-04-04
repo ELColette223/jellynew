@@ -27,6 +27,8 @@ export const ASYNC_ADMIN_ROUTES: AsyncRoute[] = [
     { path: 'plugins/repositories', type: AppType.Dashboard },
     { path: 'tasks', type: AppType.Dashboard },
     { path: 'tasks/:id', page: 'tasks/task', type: AppType.Dashboard },
+    { path: 'tickets', type: AppType.Dashboard },
+    { path: 'ticket-settings', type: AppType.Dashboard },
     { path: 'users', type: AppType.Dashboard },
     { path: 'users/add', type: AppType.Dashboard },
     { path: 'users/:userId/:tab', page: 'users/edit', type: AppType.Dashboard }

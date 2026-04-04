@@ -1,6 +1,7 @@
 import * as userSettings from '../scripts/settings/userSettings';
 import focusManager from '../components/focusManager';
 import homeSections from '../components/homesections/homesections';
+import { loadHero, pauseHero, destroyHero } from '../components/homesections/hero/recommendationHero';
 import { ServerConnections } from 'lib/jellyfin-apiclient';
 
 import '../elements/emby-itemscontainer/emby-itemscontainer';
@@ -28,8 +29,18 @@ class HomeTab {
         const apiClient = this.apiClient;
         this.destroyHomeSections();
         this.sectionsRendered = true;
+
+        const sectionsElem = view.querySelector('.sections');
+
+        // Load the hero recommendation section above the normal sections
+        if (apiClient) {
+            loadHero(sectionsElem, apiClient).catch(err => {
+                console.error('[HomeTab] Hero load failed', err);
+            });
+        }
+
         return apiClient.getCurrentUser()
-            .then(user => homeSections.loadSections(view.querySelector('.sections'), apiClient, user, userSettings))
+            .then(user => homeSections.loadSections(sectionsElem, apiClient, user, userSettings))
             .then(() => {
                 if (options.autoFocus) {
                     focusManager.autoFocus(view);
@@ -44,11 +55,14 @@ class HomeTab {
         if (sectionsContainer) {
             homeSections.pause(sectionsContainer);
         }
+
+        pauseHero();
     }
     destroy() {
         this.view = null;
         this.params = null;
         this.apiClient = null;
+        destroyHero();
         this.destroyHomeSections();
         this.sectionsContainer = null;
     }

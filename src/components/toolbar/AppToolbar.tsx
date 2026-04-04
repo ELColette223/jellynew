@@ -14,6 +14,7 @@ import UserMenuButton from './UserMenuButton';
 
 interface AppToolbarProps {
     buttons?: ReactNode
+    centerContent?: ReactNode
     isDrawerAvailable: boolean
     isDrawerOpen: boolean
     onDrawerButtonClick?: (event: React.MouseEvent<HTMLElement>) => void
@@ -30,6 +31,7 @@ const onBackButtonClick = () => {
 
 const AppToolbar: FC<PropsWithChildren<AppToolbarProps>> = ({
     buttons,
+    centerContent,
     children,
     isDrawerAvailable,
     isDrawerOpen,
@@ -44,10 +46,7 @@ const AppToolbar: FC<PropsWithChildren<AppToolbarProps>> = ({
         <Toolbar
             variant='dense'
             sx={{
-                flexWrap: {
-                    xs: 'wrap',
-                    lg: 'nowrap'
-                },
+                flexWrap: 'nowrap',
                 pl: {
                     xs: 'max(16px, env(safe-area-inset-left))',
                     sm: 'max(24px, env(safe-area-inset-left))'
@@ -58,46 +57,53 @@ const AppToolbar: FC<PropsWithChildren<AppToolbarProps>> = ({
                 }
             }}
         >
-            {isUserLoggedIn && isDrawerAvailable && (
-                <Tooltip title={globalize.translate(isDrawerOpen ? 'MenuClose' : 'MenuOpen')}>
-                    <IconButton
-                        size='large'
-                        edge='start'
-                        color='inherit'
-                        aria-label={globalize.translate(isDrawerOpen ? 'MenuClose' : 'MenuOpen')}
-                        onClick={onDrawerButtonClick}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                </Tooltip>
-            )}
+            {/* Left section */}
+            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                {isUserLoggedIn && isDrawerAvailable && (
+                    <Tooltip title={globalize.translate(isDrawerOpen ? 'MenuClose' : 'MenuOpen')}>
+                        <IconButton
+                            size='large'
+                            edge='start'
+                            color='inherit'
+                            aria-label={globalize.translate(isDrawerOpen ? 'MenuClose' : 'MenuOpen')}
+                            onClick={onDrawerButtonClick}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    </Tooltip>
+                )}
 
-            {isBackButtonAvailable && (
-                <Tooltip title={globalize.translate('ButtonBack')}>
-                    <IconButton
-                        size='large'
-                        // Set the edge if the drawer button is not shown
-                        edge={!(isUserLoggedIn && isDrawerAvailable) ? 'start' : undefined}
-                        color='inherit'
-                        aria-label={globalize.translate('ButtonBack')}
-                        onClick={onBackButtonClick}
-                    >
-                        <ArrowBack />
-                    </IconButton>
-                </Tooltip>
-            )}
+                {isBackButtonAvailable && (
+                    <Tooltip title={globalize.translate('ButtonBack')}>
+                        <IconButton
+                            size='large'
+                            edge={!(isUserLoggedIn && isDrawerAvailable) ? 'start' : undefined}
+                            color='inherit'
+                            aria-label={globalize.translate('ButtonBack')}
+                            onClick={onBackButtonClick}
+                        >
+                            <ArrowBack />
+                        </IconButton>
+                    </Tooltip>
+                )}
 
-            {children}
-
-            <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'flex-end' }}>
-                {buttons}
+                {children}
             </Box>
 
-            {isUserLoggedIn && isUserMenuAvailable && (
-                <Box sx={{ flexGrow: 0 }}>
-                    <UserMenuButton />
+            {/* Center section */}
+            {centerContent && (
+                <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'center', alignItems: 'center', minWidth: 0 }}>
+                    {centerContent}
                 </Box>
             )}
+
+            {/* Right section */}
+            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: centerContent ? 0 : 'auto' }}>
+                {buttons}
+                {isUserLoggedIn && isUserMenuAvailable && (
+                    <UserMenuButton />
+                )}
+            </Box>
         </Toolbar>
     );
 };

@@ -1,6 +1,29 @@
+const fs = require('fs');
 const fg = require('fast-glob');
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+// Load .env file if present (values already set in the environment take precedence)
+try {
+    const envPath = path.resolve(__dirname, '.env');
+    if (fs.existsSync(envPath)) {
+        fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith('#')) {
+                const eqIndex = trimmed.indexOf('=');
+                if (eqIndex > 0) {
+                    const key = trimmed.substring(0, eqIndex).trim();
+                    const value = trimmed.substring(eqIndex + 1).trim();
+                    if (!(key in process.env)) {
+                        process.env[key] = value;
+                    }
+                }
+            }
+        });
+    }
+} catch (err) {
+    console.warn('Failed to load .env file:', err);
+}
 const CopyPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -16,7 +39,7 @@ const Assets = [
     '@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker.js',
     '@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker.wasm',
     '@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker-legacy.js',
-    'pdfjs-dist/build/pdf.worker.js',
+    'pdfjs-dist/build/pdf.worker.mjs',
     'libpgs/dist/libpgs.worker.js'
 ];
 
@@ -64,7 +87,8 @@ const config = {
             __PACKAGE_JSON_NAME__: JSON.stringify(packageJson.name),
             __PACKAGE_JSON_VERSION__: JSON.stringify(packageJson.version),
             __USE_SYSTEM_FONTS__: !!JSON.parse(process.env.USE_SYSTEM_FONTS || '0'),
-            __WEBPACK_SERVE__: !!JSON.parse(process.env.WEBPACK_SERVE || '0')
+            __WEBPACK_SERVE__: !!JSON.parse(process.env.WEBPACK_SERVE || '0'),
+            __JELLYFIN_SERVER_URL__: JSON.stringify(process.env.JELLYFIN_SERVER_URL || '')
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({

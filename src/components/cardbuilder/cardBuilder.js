@@ -843,6 +843,10 @@ function buildCard(index, item, apiClient, options) {
         if (options.overlayMoreButton) {
             overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Menu}" title="${globalize.translate('ButtonMore')}"><span class="material-icons cardOverlayButtonIcon more_vert" aria-hidden="true"></span></button>`;
         }
+
+        if (options.context === 'home' && item.UserData && item.UserData.PlaybackPositionTicks > 0) {
+            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.HideFromResume}" title="${globalize.translate('HideFromResume')}"><span class="material-icons cardOverlayButtonIcon hide_source" aria-hidden="true"></span></button>`;
+        }
     }
 
     // cardBox can be it's own separate element if an outer footer is ever needed
@@ -980,7 +984,7 @@ function buildCard(index, item, apiClient, options) {
     let additionalCardContent = '';
 
     if (layoutManager.desktop && !options.disableHoverMenu) {
-        additionalCardContent += getHoverMenuHtml(item, action);
+        additionalCardContent += getHoverMenuHtml(item, action, options);
     }
 
     return '<' + tagName + ' data-index="' + index + '"' + timerAttributes + actionAttribute + ' data-isfolder="' + (item.IsFolder || false) + '" data-serverid="' + (item.ServerId || options.serverId) + '" data-id="' + (item.Id || item.ItemId) + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + pathData + positionTicksData + collectionIdData + playlistIdData + contextData + parentIdData + startDate + endDate + ' data-prefix="' + escapeHtml(prefix) + '" class="' + className + '"' + ariaLabelAttribute + '>' + cardImageContainerOpen + innerCardFooter + cardImageContainerClose + overlayButtons + additionalCardContent + cardScalableClose + outerCardFooter + cardBoxClose + '</' + tagName + '>';
@@ -990,9 +994,10 @@ function buildCard(index, item, apiClient, options) {
  * Generates HTML markup for the card overlay.
  * @param {object} item - Item used to generate the card overlay.
  * @param {string} action - Action assigned to the overlay.
+ * @param {object} options - Options used to generate the card.
  * @returns {string} HTML markup of the card overlay.
  */
-function getHoverMenuHtml(item, action) {
+function getHoverMenuHtml(item, action, options) {
     let html = '';
 
     html += '<div class="cardOverlayContainer itemAction" data-action="' + action + '">';
@@ -1017,6 +1022,10 @@ function getHoverMenuHtml(item, action) {
 
         import('../../elements/emby-ratingbutton/emby-ratingbutton');
         html += `<button is="emby-ratingbutton" type="button" data-action="${ItemAction.None}" class="${btnCssClass}" data-id="${item.Id}" data-serverid="${item.ServerId}" data-itemtype="${item.Type}" data-likes="${likes}" data-isfavorite="${userData.IsFavorite}"><span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover favorite" aria-hidden="true"></span></button>`;
+    }
+
+    if (options && options.context === 'home' && item.UserData && item.UserData.PlaybackPositionTicks > 0) {
+        html += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.HideFromResume}" title="${globalize.translate('HideFromResume')}"><span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover hide_source" aria-hidden="true"></span></button>`;
     }
 
     html += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Menu}" title="${globalize.translate('ButtonMore')}"><span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover more_vert" aria-hidden="true"></span></button>`;

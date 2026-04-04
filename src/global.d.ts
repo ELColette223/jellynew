@@ -22,4 +22,5 @@ export declare global {
     const __PACKAGE_JSON_VERSION__: string;
     const __USE_SYSTEM_FONTS__: boolean;
     const __WEBPACK_SERVE__: boolean;
+    const __JELLYFIN_SERVER_URL__: string;
 }

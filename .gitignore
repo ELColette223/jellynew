@@ -21,3 +21,11 @@ config.json
 
 # environment related
 .envrc
+.env
+
+# local db
+db.sqlite
+*.db
+*.db-shm
+*.db-wal
+tickets.db

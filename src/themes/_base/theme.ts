@@ -8,7 +8,8 @@ export const DEFAULT_COLOR_SCHEME: ColorSystemOptions = {
     palette: {
         mode: 'dark',
         primary: {
-            main: '#00a4dc'
+            main: '#000000',
+            contrastText: '#ffffff'
         },
         secondary: {
             main: '#aa5cc3'
@@ -69,6 +70,25 @@ export const DEFAULT_THEME_OPTIONS: ThemeOptions = {
             defaultProps: {
                 variant: 'contained'
             },
+            styleOverrides: {
+                root: {
+                    '&:hover': {
+                        backgroundColor: '#919191 !important'
+                    },
+                    '&:active': {
+                        backgroundColor: '#919191 !important'
+                    }
+                },
+                text: {
+                    backgroundColor: 'transparent',
+                    '&:hover': {
+                        backgroundColor: '#919191 !important'
+                    },
+                    '&.Mui-disabled': {
+                        backgroundColor: 'transparent'
+                    }
+                }
+            },
             variants: [
                 {
                     props: {
@@ -76,7 +96,8 @@ export const DEFAULT_THEME_OPTIONS: ThemeOptions = {
                     },
                     style: {
                         fontSize: '1rem',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        color: '#fff'
                     }
                 }
             ]
@@ -96,6 +117,16 @@ export const DEFAULT_THEME_OPTIONS: ThemeOptions = {
         MuiTextField: {
             defaultProps: {
                 variant: 'filled'
+            }
+        },
+        MuiIconButton: {
+            styleOverrides: {
+                root: {
+                    '&:hover': {
+                        backgroundColor: 'transparent',
+                        opacity: 0.60
+                    }
+                }
             }
         },
         MuiListItemIcon: {

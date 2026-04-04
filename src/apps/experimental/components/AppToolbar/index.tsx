@@ -1,4 +1,3 @@
-import Stack from '@mui/material/Stack';
 import React, { type FC } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -6,9 +5,11 @@ import { appRouter, PUBLIC_PATHS } from 'components/router/appRouter';
 import AppToolbar from 'components/toolbar/AppToolbar';
 import ServerButton from 'components/toolbar/ServerButton';
 
+import FavoritesButton from './FavoritesButton';
 import RemotePlayButton from './RemotePlayButton';
 import SyncPlayButton from './SyncPlayButton';
 import SearchButton from './SearchButton';
+import TicketsButton from './TicketsButton';
 import UserViewNav from './userViews/UserViewNav';
 
 interface AppToolbarProps {
@@ -40,7 +41,12 @@ const ExperimentalAppToolbar: FC<AppToolbarProps> = ({
                     <SyncPlayButton />
                     <RemotePlayButton />
                     <SearchButton />
+                    <FavoritesButton />
+                    <TicketsButton />
                 </>
+            )}
+            centerContent={!isDrawerAvailable && !isPublicPath && (
+                <UserViewNav />
             )}
             isDrawerAvailable={isDrawerAvailable}
             isDrawerOpen={isDrawerOpen}
@@ -49,16 +55,7 @@ const ExperimentalAppToolbar: FC<AppToolbarProps> = ({
             isUserMenuAvailable={!isPublicPath}
         >
             {!isDrawerAvailable && (
-                <Stack
-                    direction='row'
-                    spacing={0.5}
-                >
-                    <ServerButton />
-
-                    {!isPublicPath && (
-                        <UserViewNav />
-                    )}
-                </Stack>
+                <ServerButton />
             )}
         </AppToolbar>
     );

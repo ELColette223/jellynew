@@ -48,11 +48,16 @@ export function getMultiServer() {
 }
 
 export function getServers() {
+    const envServerUrl = __JELLYFIN_SERVER_URL__;
     return getConfig().then(config => {
-        return config.servers || [];
+        const servers = config.servers || [];
+        if (envServerUrl && !servers.includes(envServerUrl)) {
+            return [ envServerUrl, ...servers ];
+        }
+        return servers;
     }).catch(error => {
         console.log('cannot get web config:', error);
-        return [];
+        return envServerUrl ? [ envServerUrl ] : [];
     });
 }
 

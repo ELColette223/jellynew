@@ -258,16 +258,21 @@ export default function (view, params) {
         view.querySelector('#txtManualName').value = '';
         showManualForm(view, true);
     });
-    view.querySelector('.btnSelectServer').addEventListener('click', function () {
-        Dashboard.selectServer();
-    });
+    const btnSelectServer = view.querySelector('.btnSelectServer');
+    if (btnSelectServer) {
+        btnSelectServer.addEventListener('click', function () {
+            Dashboard.selectServer();
+        });
+    }
 
     view.addEventListener('viewshow', function () {
         loading.show();
         libraryMenu.setTransparentMenu(true);
 
         if (!appHost.supports(AppFeature.MultiServer)) {
-            view.querySelector('.btnSelectServer').classList.add('hide');
+            if (btnSelectServer) {
+                btnSelectServer.classList.add('hide');
+            }
         }
 
         const apiClient = getApiClient();

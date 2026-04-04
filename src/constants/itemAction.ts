@@ -33,5 +33,7 @@ export enum ItemAction {
     /** Resume playback of the Item. */
     Resume = 'resume',
     /** Set this Item as the Item to be currently played from a playlist. */
-    SetPlaylistIndex = 'setplaylistindex'
+    SetPlaylistIndex = 'setplaylistindex',
+    /** Remove the Item from the Continue Watching list. */
+    HideFromResume = 'hidefromresume'
 };

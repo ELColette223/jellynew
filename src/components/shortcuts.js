@@ -1,6 +1,7 @@
 /**
  * "Shortcut" action handlers for BaseItems.
  */
+import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api';
 import { getPlaylistsApi } from '@jellyfin/sdk/lib/utils/api/playlists-api';
 
 import { ItemAction } from 'constants/itemAction';
@@ -329,6 +330,20 @@ function executeAction(card, target, action) {
         case ItemAction.AddToPlaylist:
             getItem(target).then(addToPlaylist);
             break;
+        case ItemAction.HideFromResume: {
+            const apiClient = ServerConnections.getApiClient(serverId);
+            const api = toApi(apiClient);
+            getItemsApi(api).updateItemUserData({
+                itemId: id,
+                updateUserItemDataDto: { PlaybackPositionTicks: 0 },
+                userId: apiClient.getCurrentUserId()
+            }).then(() => {
+                notifyRefreshNeeded(card);
+            }).catch(err => {
+                console.error('[shortcuts] Failed to hide item from resume', err);
+            });
+            break;
+        }
         case ItemAction.Custom: {
             const customAction = target.getAttribute('data-customaction');
 

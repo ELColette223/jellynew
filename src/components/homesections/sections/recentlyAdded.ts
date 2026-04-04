@@ -153,7 +153,17 @@ export function loadRecentlyAdded(
     const excludeViewTypes = ['playlists', 'livetv', 'boxsets', 'channels', 'folders'];
     const userExcludeItems = user.Configuration?.LatestItemsExcludes ?? [];
 
-    userViews.forEach(item => {
+    const collectionTypeOrder: Record<string, number> = {
+        [CollectionType.Movies]: 0,
+        [CollectionType.Tvshows]: 1
+    };
+    const sortedViews = [...userViews].sort((a, b) => {
+        const orderA = a.CollectionType != null ? (collectionTypeOrder[a.CollectionType] ?? 2) : 2;
+        const orderB = b.CollectionType != null ? (collectionTypeOrder[b.CollectionType] ?? 2) : 2;
+        return orderA - orderB;
+    });
+
+    sortedViews.forEach(item => {
         if (!item.Id || userExcludeItems.includes(item.Id)) {
             return;
         }

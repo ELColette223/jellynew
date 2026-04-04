@@ -1,7 +1,9 @@
+import ConfirmationNumber from '@mui/icons-material/ConfirmationNumber';
 import Dashboard from '@mui/icons-material/Dashboard';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import LibraryAdd from '@mui/icons-material/LibraryAdd';
+import NotificationsActive from '@mui/icons-material/NotificationsActive';
 import Palette from '@mui/icons-material/Palette';
 import People from '@mui/icons-material/People';
 import PlayCircle from '@mui/icons-material/PlayCircle';
@@ -33,11 +35,17 @@ const PLAYBACK_PATHS = [
     '/dashboard/playback/trickplay'
 ];
 
+const TICKETS_PATHS = [
+    '/dashboard/tickets',
+    '/dashboard/ticket-settings'
+];
+
 const ServerDrawerSection = () => {
     const location = useLocation();
 
     const [ isLibrarySectionOpen, setIsLibrarySectionOpen ] = useState(LIBRARY_PATHS.includes(location.pathname));
     const [ isPlaybackSectionOpen, setIsPlaybackSectionOpen ] = useState(PLAYBACK_PATHS.includes(location.pathname));
+    const [ isTicketsSectionOpen, setIsTicketsSectionOpen ] = useState(TICKETS_PATHS.includes(location.pathname));
 
     const onLibrarySectionClick = useCallback((e: MouseEvent) => {
         e.preventDefault();
@@ -49,6 +57,12 @@ const ServerDrawerSection = () => {
         e.preventDefault();
         e.stopPropagation();
         setIsPlaybackSectionOpen(isOpen => !isOpen);
+    }, []);
+
+    const onTicketsSectionClick = useCallback((e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsTicketsSectionOpen(isOpen => !isOpen);
     }, []);
 
     return (
@@ -90,6 +104,28 @@ const ServerDrawerSection = () => {
                     <ListItemText primary={globalize.translate('HeaderUsers')} />
                 </ListItemLink>
             </ListItem>
+            <ListItem disablePadding>
+                <ListItemButton onClick={onTicketsSectionClick}>
+                    <ListItemIcon>
+                        <ConfirmationNumber />
+                    </ListItemIcon>
+                    <ListItemText primary='Pedidos de Conteúdo' />
+                    {isTicketsSectionOpen ? <ExpandLess /> : <ExpandMore />}
+                </ListItemButton>
+            </ListItem>
+            <Collapse in={isTicketsSectionOpen} timeout='auto' unmountOnExit>
+                <List component='div' disablePadding>
+                    <ListItemLink to='/dashboard/tickets' sx={{ pl: 4 }}>
+                        <ListItemText inset primary='Gerenciar Pedidos' />
+                    </ListItemLink>
+                    <ListItemLink to='/dashboard/ticket-settings' sx={{ pl: 4 }}>
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                            <NotificationsActive fontSize='small' />
+                        </ListItemIcon>
+                        <ListItemText primary='Configurações de Notificação' />
+                    </ListItemLink>
+                </List>
+            </Collapse>
             <ListItem disablePadding>
                 <ListItemButton onClick={onLibrarySectionClick}>
                     <ListItemIcon>

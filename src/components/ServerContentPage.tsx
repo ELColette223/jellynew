@@ -34,14 +34,19 @@ const ServerContentPage: FunctionComponent<ServerContentPageProps> = ({ view }) 
                     if (!result?.cancelled) {
                         const apiClient = ServerConnections.currentApiClient();
 
-                        // Fetch the view html from the server and translate it
-                        const viewHtml = await apiClient?.get(apiClient.getUrl(view + location.search))
-                            .then((html: string) => globalize.translateHtml(html));
+                        try {
+                            // Fetch the view html from the server and translate it
+                            const viewHtml = await apiClient?.get(apiClient.getUrl(view + location.search))
+                                .then((html: string) => globalize.translateHtml(html));
 
-                        viewManager.loadView({
-                            ...viewOptions,
-                            view: viewHtml
-                        });
+                            viewManager.loadView({
+                                ...viewOptions,
+                                view: viewHtml
+                            });
+                        } catch (err) {
+                            const status = err instanceof Response ? err.status : undefined;
+                            console.error('[ServerContentPage] failed to load plugin page', view + location.search, status ?? err);
+                        }
                     }
                 });
         };

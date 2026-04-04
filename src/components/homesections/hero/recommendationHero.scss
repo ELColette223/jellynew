@@ -1,0 +1,172 @@
+/**
+ * Home Hero recommendation section styles.
+ * The hero sits above the normal home sections and takes 70 vh of screen height.
+ */
+
+.heroRecommendationContainer {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    min-height: 320px;
+    overflow: hidden;
+    background: #000;
+
+    /* Loading state — show a dim placeholder while fetching */
+    &--loading {
+        background: #111;
+    }
+}
+
+.heroRecommendation {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+
+    &--ready {
+        opacity: 1;
+    }
+}
+
+/* Full-bleed backdrop image */
+.heroBackdrop {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center 20%;
+    background-repeat: no-repeat;
+    transition: background-image 0.4s ease;
+}
+
+/* Inline muted video overlay — hidden until a trailer loads */
+.heroVideo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+
+    &--visible {
+        opacity: 1;
+    }
+}
+
+/* Bottom gradient so text stays readable */
+.heroGradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        transparent 30%,
+        rgba(0, 0, 0, 0.6) 60%,
+        rgba(0, 0, 0, 0.85) 100%
+    );
+}
+
+/* Text and CTAs */
+.heroContent {
+    position: absolute;
+    bottom: 3.5rem;
+    left: 0;
+    right: 0;
+    padding: 0 3rem;
+    max-width: 55rem;
+    color: #fff;
+
+    @media (max-width: 600px) {
+        padding: 0 1.25rem;
+        bottom: 2.5rem;
+    }
+}
+
+.heroSectionLabel {
+    margin: 0 0 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.heroTitle {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.15;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.heroOverview {
+    margin: 0 0 1.25rem;
+    font-size: clamp(0.8rem, 1.5vw, 1rem);
+    line-height: 1.5;
+    opacity: 0.9;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.heroCtas {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.heroWatchNow {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.heroMoreInfo {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(4px);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+    }
+}
+
+/* Dot indicators */
+.heroDots {
+    position: absolute;
+    bottom: 1rem;
+    right: 2rem;
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+
+    @media (max-width: 600px) {
+        right: 1rem;
+    }
+}
+
+.heroDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.45);
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+
+    &--active {
+        background: #fff;
+        transform: scale(1.35);
+    }
+
+    &:hover:not(.heroDot--active) {
+        background: rgba(255, 255, 255, 0.7);
+    }
+}
