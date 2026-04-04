@@ -24,6 +24,13 @@ module.exports = merge(common, {
                 errors: true,
                 warnings: false
             }
-        }
+        },
+        proxy: [
+            {
+                context: ['/api'],
+                target: 'http://localhost:3001',
+                changeOrigin: true
+            }
+        ]
     }
 });

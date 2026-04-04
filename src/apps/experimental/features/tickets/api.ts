@@ -7,10 +7,6 @@ import type {
     Ticket
 } from './types';
 
-const BASE_URL = (window as Window & { __TICKET_SERVER_URL__?: string }).__TICKET_SERVER_URL__
-    || (import.meta as { env?: { VITE_TICKET_SERVER_URL?: string } }).env?.VITE_TICKET_SERVER_URL
-    || 'http://localhost:3001';
-
 /** Returns the raw Jellyfin access token (without the MediaBrowser wrapper). */
 function getRawToken(): string | null {
     try {
@@ -26,6 +22,21 @@ function getRawToken(): string | null {
     return anyWindow.ApiClient?.accessToken?.() ?? null;
 }
 
+/** Returns the Jellyfin server URL the frontend is currently connected to. */
+function getJellyfinServerUrl(): string | null {
+    try {
+        const raw = localStorage.getItem('jellyfin_credentials');
+        if (raw) {
+            const parsed = JSON.parse(raw) as { ServerAddress?: string };
+            if (parsed.ServerAddress) return parsed.ServerAddress;
+        }
+    } catch {
+        // ignore
+    }
+    const anyWindow = window as Window & { ApiClient?: { serverAddress?: () => string } };
+    return anyWindow.ApiClient?.serverAddress?.() ?? null;
+}
+
 /**
  * Returns the URL for the ticket SSE event stream, or an empty string if the
  * user is not authenticated.  The token is passed as a query param because the
@@ -34,7 +45,10 @@ function getRawToken(): string | null {
 export function getTicketEventsUrl(): string {
     const token = getRawToken();
     if (!token) return '';
-    return `${BASE_URL}/api/tickets/events?token=${encodeURIComponent(token)}`;
+    const params = new URLSearchParams({ token });
+    const jellyfinUrl = getJellyfinServerUrl();
+    if (jellyfinUrl) params.set('jellyfinServer', jellyfinUrl);
+    return `/api/tickets/events?${params}`;
 }
 
 function getAuthHeader(): string {
@@ -62,23 +76,19 @@ function getAuthHeader(): string {
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const jellyfinUrl = getJellyfinServerUrl();
     let res: Response;
     try {
-        res = await fetch(`${BASE_URL}${path}`, {
+        res = await fetch(path, {
             ...init,
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: getAuthHeader(),
+                ...(jellyfinUrl ? { 'X-Jellyfin-Server': jellyfinUrl } : {}),
                 ...(init.headers || {})
             }
         });
     } catch (err) {
-        // Convert low-level network errors into a friendlier, localized message
-        // so the UI doesn't show browser-specific text like
-        // "NetworkError when attempting to fetch resource.".
-        // Keep a console.error for diagnostics.
-        // Portuguese message: "Sistema de pedidos offline"
-        // Add a brief explanatory sentence to help users.
         // eslint-disable-next-line no-console
         console.error('[tickets/api] Network request failed for', path, err);
         throw new Error('Sistema de pedidos offline — não foi possível conectar ao servidor de pedidos.');

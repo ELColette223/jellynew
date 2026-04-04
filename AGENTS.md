@@ -57,8 +57,17 @@ The main app areas are:
 - `npm run build:development` when you need a local bundle check
 - `npm start` for local development
 
+## Reimagined Changelog
+
+- The changelog lives in `REIMAGINED_CHANGELOG.md` at the repo root (read the file after any change).
+- When completing a feature or fix, append a one-line entry under the current version block.
+- Use only three tags: `[ADDED]`, `[CHANGED]`, or `[REMOVED]`.
+- One entry per user-visible change. Do not log internal details (routes, services, helpers) separately — group them into the feature they belong to.
+- Keep entries short: `[TAG] - What changed and why it matters to the user.`
+
 ## Useful References
 
 - `CONTRIBUTING.md` for contribution, release, and LLM policy guidance
+- `REIMAGINED_CHANGELOG.md` for the current changelog format and recent entries
 - `package.json` for scripts, dependencies, and browser support
 - `eslint.config.mjs` for linting rules

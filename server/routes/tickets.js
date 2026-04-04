@@ -3,7 +3,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const db = require('../db');
-const { requireAuth, validateToken } = require('../middleware/auth');
+const { requireAuth, validateToken, resolveJellyfinUrl } = require('../middleware/auth');
 const { searchContent } = require('../services/jellyfin');
 const { notifyNewTicket } = require('../services/notifications');
 const { getEmailByJellyfinId } = require('../services/userLookup');
@@ -46,7 +46,10 @@ router.get('/events', async (req, res) => {
         return res.status(401).json({ error: 'Token required' });
     }
 
-    const user = await validateToken(`MediaBrowser Token="${rawToken}"`);
+    // X-Jellyfin-Server can't be sent via EventSource, so the URL is passed
+    // as a query param instead and resolved the same way.
+    const jellyfinServerUrl = req.query.jellyfinServer || resolveJellyfinUrl(null);
+    const user = await validateToken(`MediaBrowser Token="${rawToken}"`, jellyfinServerUrl);
     if (!user) {
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
@@ -104,7 +107,7 @@ router.post('/search', requireAuth, async (req, res) => {
     }
 
     const authHeader = req.headers['authorization'] || req.headers['x-emby-authorization'];
-    const results = await searchContent(authHeader, query.trim(), year || null);
+    const results = await searchContent(authHeader, query.trim(), year || null, req.jellyfinServerUrl);
 
     res.json({ results });
 });
