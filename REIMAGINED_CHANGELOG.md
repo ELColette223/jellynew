@@ -19,3 +19,4 @@ Reimagined Changelog
 [CHANGED] - App toolbar reorganised to accommodate new buttons
 [CHANGED] - Ticket creation no longer asks the user for their email — it is resolved automatically from their registration profile
 [CHANGED] - Hero carousel now displays a "Based on what you watch" label above the title for context
+[CHANGED] - React Query Devtools are no longer included in production builds, keeping the bundle clean

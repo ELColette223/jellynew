@@ -19,48 +19,16 @@ const PORT = parseInt(process.env.TICKET_SERVER_PORT || '3001', 10);
 const staticDir = path.resolve(__dirname, '..');
 const isProduction = fs.existsSync(path.join(staticDir, 'index.html'));
 
-function addOrigin(list, value) {
-    if (!value) return;
-
-    for (const rawOrigin of String(value).split(',').map(origin => origin.trim()).filter(Boolean)) {
-        try {
-            const origin = new URL(rawOrigin).origin;
-            list.add(origin);
-
-            const parsed = new URL(origin);
-            if (parsed.hostname === 'localhost') {
-                list.add(origin.replace('localhost', '127.0.0.1'));
-            } else if (parsed.hostname === '127.0.0.1') {
-                list.add(origin.replace('127.0.0.1', 'localhost'));
-            }
-        } catch {
-            list.add(rawOrigin);
-        }
-    }
-}
-
 const app = express();
 
-// In production the server IS the origin — no CORS needed.
-// In development allow the webpack-dev-server origin.
-if (!isProduction) {
-    const allowedOrigins = new Set();
-    addOrigin(allowedOrigins, process.env.FRONTEND_ORIGIN || 'http://localhost:8080');
-    addOrigin(allowedOrigins, process.env.JELLYFIN_SERVER_URL);
-
-    const corsOptions = {
-        origin: (origin, cb) => {
-            if (!origin || allowedOrigins.has(origin)) return cb(null, true);
-            cb(new Error(`CORS: origin ${origin} not allowed`));
-        },
-        credentials: false,
-        methods: [ 'GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS' ],
-        allowedHeaders: [ 'Content-Type', 'Authorization', 'X-Emby-Authorization', 'X-Jellyfin-Server' ]
-    };
-
-    app.use(cors(corsOptions));
-    app.options('*', cors(corsOptions));
-}
+const corsOptions = {
+    origin: true,
+    credentials: false,
+    methods: [ 'GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS' ],
+    allowedHeaders: [ 'Content-Type', 'Authorization', 'X-Emby-Authorization', 'X-Jellyfin-Server' ]
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '64kb' }));
 

@@ -6,6 +6,7 @@
   "license": "GPL-2.0-or-later",
   "devDependencies": {
     "@babel/core": "7.29.0",
+    "@tanstack/react-query-devtools": "5.91.3",
     "@babel/plugin-transform-modules-umd": "7.27.1",
     "@babel/preset-env": "7.29.2",
     "@babel/preset-react": "7.28.5",
@@ -94,7 +95,6 @@
     "@mui/x-date-pickers": "7.29.4",
     "@react-hook/resize-observer": "2.0.2",
     "@tanstack/react-query": "5.91.2",
-    "@tanstack/react-query-devtools": "5.91.3",
     "abortcontroller-polyfill": "1.7.8",
     "axios": "1.16.0",
     "blurhash": "2.0.5",
