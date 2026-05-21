@@ -55,7 +55,29 @@ db.exec(`
         key   TEXT PRIMARY KEY,
         value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS content_reports (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id      TEXT NOT NULL,
+        user_name    TEXT NOT NULL,
+        user_email   TEXT,
+        item_id      TEXT NOT NULL,
+        item_title   TEXT NOT NULL,
+        item_type    TEXT,
+        item_year    INTEGER,
+        description  TEXT NOT NULL,
+        resolved     INTEGER NOT NULL DEFAULT 0,
+        created_at   DATETIME DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_reports_created ON content_reports (created_at DESC);
 `);
+
+// Safe migration for existing DBs
+try {
+    db.exec("ALTER TABLE content_reports ADD COLUMN user_email TEXT;");
+} catch (err) {
+    // Ignore if column already exists
+}
 
 // Seed default settings if not present
 const seedSetting = db.prepare(

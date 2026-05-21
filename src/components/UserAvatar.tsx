@@ -12,7 +12,7 @@ interface UserAvatarProps extends AvatarProps {
 
 const UserAvatar: FC<UserAvatarProps> = ({
     user,
-    size
+    size = 28
 }) => {
     const { api } = useApi();
 
@@ -30,7 +30,8 @@ const UserAvatar: FC<UserAvatarProps> = ({
                     theme.vars.palette.primary.dark,
                 color: 'inherit',
                 width: size,
-                height: size
+                height: size,
+                ml: 1.5
             })}
         />
     ) : null;

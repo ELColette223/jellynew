@@ -115,6 +115,15 @@ const UserViewNav = () => {
                     key={link.name}
                     variant='text'
                     color='inherit'
+                    sx={(theme) => ({
+                        borderRadius: '8px',
+                        color: theme.palette.text.secondary,
+                        '&:hover': {
+                            backgroundColor: 'transparent',
+                            color: theme.palette.text.primary
+                        },
+                        transition: 'all 0.2s ease-in-out'
+                    })}
                     startIcon={<Icon>{link.icon || 'link'}</Icon>}
                     component='a'
                     href={link.url}
@@ -130,7 +139,22 @@ const UserViewNav = () => {
                     key={view.Id}
                     variant='text'
                     color='inherit'
-                    sx={(view.Id === currentUserView?.Id) ? { backgroundColor: '#919191', '&:hover': { backgroundColor: '#919191' } } : undefined}
+                    sx={(theme) => {
+                        const isActive = view.Id === currentUserView?.Id;
+                        const isDark = theme.palette.mode === 'dark';
+                        const baseColor = isDark ? '255, 255, 255' : '0, 0, 0';
+                        const activeBg = isActive ? `rgba(${baseColor}, ${isDark ? 0.12 : 0.08})` : 'transparent';
+                        return {
+                            borderRadius: '8px',
+                            backgroundColor: activeBg,
+                            color: isActive ? theme.palette.text.primary : theme.palette.text.secondary,
+                            '&:hover': {
+                                backgroundColor: activeBg,
+                                color: theme.palette.text.primary
+                            },
+                            transition: 'all 0.2s ease-in-out'
+                        };
+                    }}
                     startIcon={<LibraryIcon item={view} />}
                     component={Link}
                     to={appRouter.getRouteUrl(view, { context: view.CollectionType }).substring(1)}

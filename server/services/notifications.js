@@ -110,7 +110,7 @@ async function sendAdminNewTicketEmail(ticket) {
     const transporter = getTransporter();
     if (!transporter) return;
 
-    const adminEmail = getSetting('admin_email') || '';
+    const adminEmail = getSetting('admin_email') || process.env.SMTP_ADMIN_EMAIL || process.env.SMTP_USER || '';
     if (!adminEmail) return;
 
     const from = process.env.SMTP_FROM || process.env.SMTP_USER;
@@ -219,10 +219,167 @@ async function notifyStatusChange(ticket, newStatus) {
     await Promise.allSettled(tasks);
 }
 
+/**
+ * Sends an email to the admin notifying of a new content report.
+ * Uses the admin_email stored in the settings table.
+ */
+async function resolveReportUserEmail(report) {
+    if (report.user_email) return report.user_email;
+    return getEmailByJellyfinId(report.user_id);
+}
+
+/**
+ * Sends an email to the admin notifying of a new content report.
+ * Uses the admin_email stored in the settings table.
+ */
+async function sendAdminReportEmail(report) {
+    const transporter = getTransporter();
+    if (!transporter) return;
+
+    const adminEmail = getSetting('admin_email') || process.env.SMTP_ADMIN_EMAIL || process.env.SMTP_USER || '';
+    if (!adminEmail) return;
+
+    const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const subject = `[Problema Reportado] "${report.item_title}"`;
+
+    const webClientUrl = `${process.env.FRONTEND_ORIGIN || 'http://localhost:8080'}/#!/details?id=${report.item_id}`;
+    const serverUrl = `${process.env.JELLYFIN_SERVER_URL || 'http://localhost:8096'}/web/index.html#!/details?id=${report.item_id}`;
+
+    const bodyLines = [
+        'Um novo problema de conteúdo foi reportado por um usuário.',
+        '',
+        `Conteúdo: ${report.item_title}`,
+        ...(report.item_type ? [ `Tipo: ${report.item_type}` ] : []),
+        ...(report.item_year ? [ `Ano: ${report.item_year}` ] : []),
+        `Usuário: ${report.user_name} (${report.user_id})`,
+        '',
+        'Descrição do problema:',
+        report.description,
+        '',
+        'Links diretos para o item:',
+        `- Web Client: ${webClientUrl}`,
+        `- Servidor Jellyfin: ${serverUrl}`,
+        '',
+        '— Sistema de Reports Jellyfin'
+    ];
+
+    try {
+        await transporter.sendMail({
+            from,
+            to: adminEmail,
+            subject,
+            text: bodyLines.join('\n')
+        });
+    } catch (err) {
+        console.error('[notifications] Failed to send content report email to admin:', err.message);
+    }
+}
+
+/**
+ * Sends a confirmation email to the user that their content report was received.
+ */
+async function sendUserReportConfirmationEmail(report) {
+    const transporter = getTransporter();
+    if (!transporter) return;
+
+    const email = await resolveReportUserEmail(report);
+    if (!email) return;
+
+    const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const subject = `[Reporte de Conteúdo] Recebido: "${report.item_title}"`;
+
+    const bodyLines = [
+        `Olá, ${report.user_name}!`,
+        '',
+        `Confirmamos o recebimento do seu reporte de problema para o conteúdo "${report.item_title}".`,
+        '',
+        'Descrição relatada:',
+        `"${report.description}"`,
+        '',
+        'Nossa equipe de administração analisará o problema o quanto antes.',
+        '',
+        'Agradecemos a sua colaboração!',
+        '',
+        '— Equipe Jellyfin'
+    ];
+
+    try {
+        await transporter.sendMail({
+            from,
+            to: email,
+            subject,
+            text: bodyLines.join('\n')
+        });
+    } catch (err) {
+        console.error('[notifications] Failed to send report confirmation email to user:', err.message);
+    }
+}
+
+/**
+ * Sends an email notification to the user when the status of their report changes.
+ */
+async function sendUserReportStatusEmail(report) {
+    const transporter = getTransporter();
+    if (!transporter) return;
+
+    const email = await resolveReportUserEmail(report);
+    if (!email) return;
+
+    const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const isResolved = report.resolved === 1;
+    const statusText = isResolved ? 'Resolvido' : 'Reaberto';
+
+    const subject = `[Reporte de Conteúdo] Status atualizado: "${report.item_title}" — ${statusText}`;
+
+    const bodyLines = [
+        `Olá, ${report.user_name}!`,
+        '',
+        `O status do problema relatado para o conteúdo "${report.item_title}" foi atualizado.`,
+        '',
+        `Status do Reporte: ${statusText}`,
+        '',
+        isResolved
+            ? 'O problema foi resolvido e o conteúdo já deve estar disponível para reprodução normal. Obrigado por nos ajudar a melhorar a plataforma!'
+            : 'O problema relatado foi reaberto e continuará sob análise de nossa equipe.',
+        '',
+        '— Equipe Jellyfin'
+    ];
+
+    try {
+        await transporter.sendMail({
+            from,
+            to: email,
+            subject,
+            text: bodyLines.join('\n')
+        });
+    } catch (err) {
+        console.error('[notifications] Failed to send report status email to user:', err.message);
+    }
+}
+
+/**
+ * Dispatches notifications when a new report is created.
+ */
+async function notifyContentReport(report) {
+    await Promise.allSettled([
+        sendAdminReportEmail(report),
+        sendUserReportConfirmationEmail(report)
+    ]);
+}
+
+/**
+ * Dispatches notifications when a report's status changes.
+ */
+async function notifyContentReportStatusChange(report) {
+    await sendUserReportStatusEmail(report);
+}
+
 module.exports = {
     notifyNewTicket,
     notifyStatusChange,
     sendEmailNotification,
     sendAdminNewTicketEmail,
-    sendDiscordAnnouncement
+    sendDiscordAnnouncement,
+    notifyContentReport,
+    notifyContentReportStatusChange
 };

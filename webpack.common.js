@@ -90,7 +90,13 @@ const config = {
             __WEBPACK_SERVE__: !!JSON.parse(process.env.WEBPACK_SERVE || '0'),
             __JELLYFIN_SERVER_URL__: JSON.stringify(process.env.JELLYFIN_SERVER_URL || '')
         }),
-        new CleanWebpackPlugin(),
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: [
+                '**/*',
+                '!server',
+                '!server/**/*'
+            ]
+        }),
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: 'index.html',

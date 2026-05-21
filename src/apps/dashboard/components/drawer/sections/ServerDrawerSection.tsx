@@ -37,6 +37,7 @@ const PLAYBACK_PATHS = [
 
 const TICKETS_PATHS = [
     '/dashboard/tickets',
+    '/dashboard/reports',
     '/dashboard/ticket-settings'
 ];
 
@@ -117,6 +118,9 @@ const ServerDrawerSection = () => {
                 <List component='div' disablePadding>
                     <ListItemLink to='/dashboard/tickets' sx={{ pl: 4 }}>
                         <ListItemText inset primary='Gerenciar Pedidos' />
+                    </ListItemLink>
+                    <ListItemLink to='/dashboard/reports' sx={{ pl: 4 }}>
+                        <ListItemText inset primary='Problemas Reportados' />
                     </ListItemLink>
                     <ListItemLink to='/dashboard/ticket-settings' sx={{ pl: 4 }}>
                         <ListItemIcon sx={{ minWidth: 32 }}>

@@ -26,7 +26,7 @@ function setSetting(key, value) {
  *   { admin_email: string, notify_client: boolean, smtp_configured: boolean }
  */
 router.get('/', requireAdmin, (_req, res) => {
-    const adminEmail = getSetting('admin_email') || '';
+    const adminEmail = getSetting('admin_email') || process.env.SMTP_ADMIN_EMAIL || process.env.SMTP_USER || '';
     const notifyClient = getSetting('notify_client') !== 'false';
     const smtpConfigured = Boolean(
         process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
@@ -62,7 +62,7 @@ router.put('/', requireAdmin, (req, res) => {
  * Sends a test email to the admin_email address using the .env SMTP config.
  */
 router.post('/test-email', requireAdmin, async (req, res) => {
-    const adminEmail = getSetting('admin_email') || '';
+    const adminEmail = getSetting('admin_email') || process.env.SMTP_ADMIN_EMAIL || process.env.SMTP_USER || '';
     if (!adminEmail) {
         return res.status(400).json({ error: 'Nenhum e-mail de administrador configurado.' });
     }

@@ -668,6 +668,13 @@ function reloadFromItem(instance, page, params, item, user) {
         hideAll(page, 'btnDownload', true);
     }
 
+    const nonReportableTypes = ['Person', 'Genre', 'MusicGenre', 'Studio'];
+    if (nonReportableTypes.indexOf(item.Type) === -1) {
+        hideAll(page, 'btnReportContent', true);
+    } else {
+        hideAll(page, 'btnReportContent', false);
+    }
+
     autoFocus(page);
 }
 
@@ -1995,6 +2002,45 @@ export default function (view, params) {
         setTrailerButtonVisibility(view, currentItem);
     }
 
+    function onReportContentClick() {
+        const dialogContainer = document.createElement('div');
+        document.body.appendChild(dialogContainer);
+
+        let unmountMethod;
+
+        const onClose = () => {
+            if (unmountMethod) {
+                unmountMethod();
+            }
+            if (dialogContainer.parentNode) {
+                dialogContainer.parentNode.removeChild(dialogContainer);
+            }
+        };
+
+        let itemTitle = currentItem.Name;
+        if (currentItem.Type === 'Episode') {
+            const seriesName = currentItem.SeriesName || '';
+            const season = currentItem.ParentIndexNumber !== undefined && currentItem.ParentIndexNumber !== null ? `S${String(currentItem.ParentIndexNumber).padStart(2, '0')}` : '';
+            const episode = currentItem.IndexNumber !== undefined && currentItem.IndexNumber !== null ? `E${String(currentItem.IndexNumber).padStart(2, '0')}` : '';
+            const epCode = season || episode ? `${season}${episode}` : '';
+            itemTitle = [seriesName, epCode, currentItem.Name].filter(Boolean).join(' - ');
+        } else if (currentItem.Type === 'Season') {
+            const seriesName = currentItem.SeriesName || '';
+            itemTitle = seriesName ? `${seriesName} - ${currentItem.Name}` : currentItem.Name;
+        }
+
+        import('../../apps/experimental/features/reports/components/ReportContentDialog').then(({ default: ReportContentDialog }) => {
+            unmountMethod = renderComponent(ReportContentDialog, {
+                open: true,
+                onClose: onClose,
+                itemId: currentItem.Id,
+                itemTitle: itemTitle,
+                itemType: currentItem.Type,
+                itemYear: currentItem.ProductionYear
+            }, dialogContainer);
+        });
+    }
+
     function onWebSocketMessage(e, data) {
         const msg = data;
         const apiClient = getApiClient();
@@ -2034,6 +2080,7 @@ export default function (view, params) {
             splitVersions(self, view, apiClient, params);
         });
         bindAll(view, '.btnMoreCommands', 'click', onMoreCommandsClick);
+        bindAll(view, '.btnReportContent', 'click', onReportContentClick);
         view.querySelector('.selectSource').addEventListener('change', function () {
             renderVideoSelections(view, self._currentPlaybackMediaSources);
             renderAudioSelections(view, self._currentPlaybackMediaSources);
