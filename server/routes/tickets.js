@@ -40,41 +40,43 @@ router.get('/', requireAuth, (req, res) => {
  * Auth token is passed as a query param because the browser EventSource API
  * does not support custom request headers.
  */
-router.get('/events', async (req, res) => {
-    const rawToken = req.query.token;
-    if (!rawToken || typeof rawToken !== 'string') {
-        return res.status(401).json({ error: 'Token required' });
-    }
+router.get('/events', (req, res, next) => {
+    (async () => {
+        const rawToken = req.query.token;
+        if (!rawToken || typeof rawToken !== 'string') {
+            return res.status(401).json({ error: 'Token required' });
+        }
 
-    // X-Jellyfin-Server can't be sent via EventSource, so the URL is passed
-    // as a query param instead and resolved the same way.
-    const jellyfinServerUrl = req.query.jellyfinServer || resolveJellyfinUrl(null);
-    const user = await validateToken(`MediaBrowser Token="${rawToken}"`, jellyfinServerUrl);
-    if (!user) {
-        return res.status(401).json({ error: 'Invalid or expired token' });
-    }
+        // X-Jellyfin-Server can't be sent via EventSource, so the URL is passed
+        // as a query param instead and resolved the same way.
+        const jellyfinServerUrl = req.query.jellyfinServer || resolveJellyfinUrl(null);
+        const user = await validateToken(`MediaBrowser Token="${rawToken}"`, jellyfinServerUrl);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
 
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no'); // disable nginx buffering
-    res.flushHeaders();
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no'); // disable nginx buffering
+        res.flushHeaders();
 
-    // Confirm connection to the client
-    res.write(': connected\n\n');
+        // Confirm connection to the client
+        res.write(': connected\n\n');
 
-    const userId = user.Id;
-    addConnection(userId, res);
+        const userId = user.Id;
+        addConnection(userId, res);
 
-    // Keep-alive heartbeat every 25 s to prevent proxy/firewall timeouts
-    const heartbeat = setInterval(() => {
-        try { res.write(': ping\n\n'); } catch { /* ignore */ }
-    }, 25000);
+        // Keep-alive heartbeat every 25 s to prevent proxy/firewall timeouts
+        const heartbeat = setInterval(() => {
+            try { res.write(': ping\n\n'); } catch { /* ignore */ }
+        }, 25000);
 
-    req.on('close', () => {
-        clearInterval(heartbeat);
-        removeConnection(userId, res);
-    });
+        req.on('close', () => {
+            clearInterval(heartbeat);
+            removeConnection(userId, res);
+        });
+    })().catch(next);
 });
 
 /**

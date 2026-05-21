@@ -33,10 +33,13 @@ async function validateToken(token, jellyfinUrl = null) {
     const url = jellyfinUrl || JELLYFIN_URL;
     if (!token || !url) return null;
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+
     try {
         const res = await fetch(`${url}/Users/Me`, {
             headers: { Authorization: token },
-            timeout: 5000
+            signal: controller.signal
         });
 
         if (!res.ok) return null;
@@ -44,6 +47,8 @@ async function validateToken(token, jellyfinUrl = null) {
         return await res.json();
     } catch {
         return null;
+    } finally {
+        clearTimeout(timer);
     }
 }
 

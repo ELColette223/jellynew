@@ -28,10 +28,10 @@ const HIDDEN_COLLECTION_TYPES = new Set<CollectionType | undefined>([
 
 /** Library IDs that should never appear in the toolbar. */
 const HIDDEN_LIBRARY_IDS = new Set<string | undefined>([
-    '6fa9075ab29759279bc3693634fbcd8f', // Animações
-    'c12a47d03dabf0c86ff8f729f3383e68', // Brasil Paralelo
-    '43523fdb3771e558099ea0fe01461dac', // Brasil Paralelo Séries
-    'ce44083d624d539c463facd0dee2863f'  // Coleções
+    '6fa9075ab29759279bc3693634fbcd8f',
+    'c12a47d03dabf0c86ff8f729f3383e68',
+    '43523fdb3771e558099ea0fe01461dac',
+    'ce44083d624d539c463facd0dee2863f' 
 ]);
 
 const HOME_PATH = '/home';
