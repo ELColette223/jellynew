@@ -35,6 +35,14 @@ const RANDOM_SLOTS = HERO_POOL_SIZE - PERSONALISED_SLOTS;
 /** sessionStorage key that tracks item IDs already shown this session. */
 const SESSION_SHOWN_KEY = 'heroShownIds';
 
+interface HeroPoolCache {
+    items: BaseItemDto[];
+    builtAt: number;
+    userId: string;
+}
+let poolCache: HeroPoolCache | null = null;
+const POOL_CACHE_TTL_MS = 5 * 60 * 1000;
+
 // ---------------------------------------------------------------------------
 // Session-level deduplication helpers
 // ---------------------------------------------------------------------------
@@ -70,6 +78,7 @@ export function clearShownHistory(): void {
     } catch {
         // Ignore
     }
+    poolCache = null;
 }
 
 // ---------------------------------------------------------------------------
@@ -268,7 +277,7 @@ async function fetchRandomLibraryItems(
             enableImageTypes: ['Primary', 'Backdrop', 'Thumb'],
             enableTotalRecordCount: false,
             // Fetch a wider window so filtering by image / dedup still leaves enough
-            limit: Math.max(count * 6, 24)
+            limit: Math.max(count * 4, 12)
         });
 
         const candidates = response.data.Items ?? [];
@@ -307,6 +316,9 @@ export async function buildHeroPool(
     apiClient: ApiClient
 ): Promise<BaseItemDto[]> {
     const userId = apiClient.getCurrentUserId();
+    if (poolCache && poolCache.userId === userId && Date.now() - poolCache.builtAt < POOL_CACHE_TTL_MS) {
+        return poolCache.items;
+    }
     const shownIds = getShownIds();
 
     // --- Personalised candidates ---
@@ -363,6 +375,8 @@ export async function buildHeroPool(
         .map(item => item.SeriesId ?? item.Id ?? '')
         .filter(Boolean);
     markItemsAsShown(chosenIds);
+
+    poolCache = { items: finalPool, builtAt: Date.now(), userId };
 
     return finalPool;
 }

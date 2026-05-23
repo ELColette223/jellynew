@@ -6,7 +6,9 @@ export const queryClient = new QueryClient({
             networkMode: 'always' // network connection is not required if running on localhost
         },
         queries: {
-            networkMode: 'always' // network connection is not required if running on localhost
+            networkMode: 'always', // network connection is not required if running on localhost
+            staleTime: 60000,
+            refetchOnWindowFocus: false
         }
     }
 });

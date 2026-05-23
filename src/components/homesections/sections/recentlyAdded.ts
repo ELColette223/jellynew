@@ -44,8 +44,7 @@ function getFetchLatestItemsFn(
             userId: user?.Id,
             limit,
             fields: [
-                ItemFields.PrimaryImageAspectRatio,
-                ItemFields.Path
+                ItemFields.PrimaryImageAspectRatio
             ],
             imageTypeLimit: 1,
             enableImageTypes: [

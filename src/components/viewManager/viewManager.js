@@ -35,6 +35,24 @@ viewContainer.setOnBeforeChange(function (newView, isRestored, options) {
     dispatchViewEvent(newView, eventDetail, 'viewbeforeshow');
 });
 
+function createViewEvent(name, init) {
+    if (name === 'pageshow' || name === 'pagehide') {
+        const event = new PageTransitionEvent(name, {
+            bubbles: init.bubbles,
+            cancelable: init.cancelable,
+            persisted: false
+        });
+        Object.defineProperty(event, 'detail', {
+            value: init.detail,
+            writable: true,
+            configurable: true,
+            enumerable: true
+        });
+        return event;
+    }
+    return new CustomEvent(name, init);
+}
+
 function onViewChange(view, options, isRestore) {
     const lastView = currentView;
     if (lastView) {
@@ -60,7 +78,7 @@ function onViewChange(view, options, isRestore) {
     view.dispatchEvent(new CustomEvent('viewshow', eventDetail));
 
     if (dispatchPageEvents) {
-        view.dispatchEvent(new CustomEvent('pageshow', eventDetail));
+        view.dispatchEvent(createViewEvent('pageshow', eventDetail));
     }
 }
 
@@ -92,7 +110,7 @@ function dispatchViewEvent(view, eventInfo, eventName, isCancellable) {
 
     if (dispatchPageEvents) {
         eventInfo.cancelable = false;
-        view.dispatchEvent(new CustomEvent(eventName.replace('view', 'page'), eventInfo));
+        view.dispatchEvent(createViewEvent(eventName.replace('view', 'page'), eventInfo));
     }
 
     return eventResult;

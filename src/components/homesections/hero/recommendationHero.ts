@@ -61,6 +61,8 @@ const state: HeroState = {
     destroyed: false
 };
 
+const watchLaterStatusCache = new Map<string, boolean>();
+
 function clearTimers() {
     if (state.advanceTimer !== null) {
         clearTimeout(state.advanceTimer);
@@ -238,7 +240,7 @@ async function showSlide(step: number) {
     const backdropEl = state.container.querySelector<HTMLElement>('.heroBackdrop');
     if (backdropEl) {
         const backdropUrl = getItemBackdropImageUrl(apiClient, item, {
-            maxWidth: 1920,
+            maxWidth: Math.min(Math.round(window.innerWidth * (window.devicePixelRatio || 1)), 1920),
             quality: 85
         });
         backdropEl.style.backgroundImage = backdropUrl ? `url("${backdropUrl}")` : 'none';
@@ -275,11 +277,8 @@ async function showSlide(step: number) {
     if (watchLaterBtn && item.Id) {
         const itemId = item.Id;
 
-        // Fetch current status asynchronously and reflect on the button
-        fetchWatchLaterStatus(itemId).then(({ inWatchLater }) => {
-            if (state.currentIndex !== absoluteIndex || !watchLaterBtn) return;
-            updateWatchLaterBtn(watchLaterBtn, inWatchLater);
-        }).catch(() => { /* keep default state */ });
+        const inWatchLater = watchLaterStatusCache.get(itemId) ?? false;
+        updateWatchLaterBtn(watchLaterBtn, inWatchLater);
 
         watchLaterBtn.onclick = async () => {
             const isIn = watchLaterBtn.dataset.inWatchLater === 'true';
@@ -287,6 +286,7 @@ async function showSlide(step: number) {
                 if (isIn) {
                     await removeFromWatchLater(itemId);
                     updateWatchLaterBtn(watchLaterBtn, false);
+                    watchLaterStatusCache.set(itemId, false);
                 } else {
                     await addToWatchLater({
                         item_id: itemId,
@@ -295,6 +295,7 @@ async function showSlide(step: number) {
                         item_year: item.ProductionYear ?? undefined
                     });
                     updateWatchLaterBtn(watchLaterBtn, true);
+                    watchLaterStatusCache.set(itemId, true);
                 }
             } catch {
                 // Silently ignore — user feedback not required for a secondary action
@@ -404,6 +405,20 @@ export async function loadHero(
 
     state.items = items;
     state.startIndex = Math.floor(Math.random() * items.length);
+
+    // Pre-fetch Watch Later status for all items in the pool
+    watchLaterStatusCache.clear();
+    const statusPromises = items
+        .filter(i => i.Id)
+        .map(async i => {
+            try {
+                const res = await fetchWatchLaterStatus(i.Id!);
+                watchLaterStatusCache.set(i.Id!, res.inWatchLater);
+            } catch {
+                watchLaterStatusCache.set(i.Id!, false);
+            }
+        });
+    await Promise.allSettled(statusPromises);
 
     // Show the first slide (step 0 = startIndex)
     showSlide(0);

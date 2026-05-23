@@ -16,6 +16,24 @@ type CustomPageProps = {
 
 export type PageProps = CustomPageProps & HTMLAttributes<HTMLDivElement>;
 
+const createPageEvent = (name: string, init: CustomEventInit) => {
+    if (name === 'pageshow' || name === 'pagehide') {
+        const event = new PageTransitionEvent(name, {
+            bubbles: init.bubbles,
+            cancelable: init.cancelable,
+            persisted: false
+        });
+        Object.defineProperty(event, 'detail', {
+            value: init.detail,
+            writable: true,
+            configurable: true,
+            enumerable: true
+        });
+        return event;
+    }
+    return new CustomEvent(name, init);
+};
+
 /**
  * Page component that handles hiding active non-react views, triggering the required events for
  * navigation and appRouter state updates, and setting the correct classes and data attributes.
@@ -52,13 +70,13 @@ const Page: FC<PropsWithChildren<PageProps>> = ({
             }
         };
         // viewbeforeshow - switches between the admin dashboard and standard themes
-        element.current?.dispatchEvent(new CustomEvent('viewbeforeshow', event));
+        element.current?.dispatchEvent(createPageEvent('viewbeforeshow', event));
         // pagebeforeshow - hides tabs on tables pages in libraryMenu
-        element.current?.dispatchEvent(new CustomEvent('pagebeforeshow', event));
+        element.current?.dispatchEvent(createPageEvent('pagebeforeshow', event));
         // viewshow - updates state of appRouter
-        element.current?.dispatchEvent(new CustomEvent('viewshow', event));
+        element.current?.dispatchEvent(createPageEvent('viewshow', event));
         // pageshow - updates header/navigation in libraryMenu
-        element.current?.dispatchEvent(new CustomEvent('pageshow', event));
+        element.current?.dispatchEvent(createPageEvent('pageshow', event));
     }, [ element, isNowPlayingBarEnabled, isThemeMediaSupported ]);
 
     useEffect(() => {

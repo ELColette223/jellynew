@@ -27,6 +27,11 @@ Reimagined Changelog
 [CHANGED] - Profile avatar icon size and spacing in the top toolbar to look more proportional
 [CHANGED] - User view navigation buttons hover and active states to be theme-aware and prevent white/harsh hover backgrounds
 [CHANGED] - App toolbar responsiveness improved by hiding secondary action buttons on smaller mobile screens while keeping the new Watch Later button accessible
+[CHANGED] - Image loading optimised with a persistent Service Worker cache (Cache-First, 30-day TTL) eliminating repeat network requests for posters and backdrops
+[CHANGED] - Home screen hero recommendation pool cached in memory for 5 minutes, reducing API calls on repeated visits
+[CHANGED] - Watch Later status for hero carousel pre-fetched in a single batch instead of one request per slide
+[CHANGED] - React Query staleTime set to 60 seconds and window-focus refetch disabled, preventing unnecessary API bursts on tab switching
+[CHANGED] - Media backdrop resolution adjusted dynamically based on screen size, reducing network load on smaller viewports
 [FIXED] - SSE ticket events endpoint no longer returns HTML in production when token validation fails or times out
 [FIXED] - Content reports for series episodes now show the series name and season/episode numbers (e.g. Series - S01E01 - Title) in the title instead of only the episode name.
 [FIXED] - Admin email notifications for tickets and reports now fallback to SMTP_ADMIN_EMAIL or SMTP_USER if the admin email setting is not configured.
