@@ -1,11 +1,13 @@
 import React, { type FC } from 'react';
 import { useLocation } from 'react-router-dom';
+import Box from '@mui/material/Box';
 
 import { appRouter, PUBLIC_PATHS } from 'components/router/appRouter';
 import AppToolbar from 'components/toolbar/AppToolbar';
 import ServerButton from 'components/toolbar/ServerButton';
 
 import FavoritesButton from './FavoritesButton';
+import WatchLaterButton from './WatchLaterButton';
 import RemotePlayButton from './RemotePlayButton';
 import SyncPlayButton from './SyncPlayButton';
 import SearchButton from './SearchButton';
@@ -41,8 +43,13 @@ const ExperimentalAppToolbar: FC<AppToolbarProps> = ({
                     <SyncPlayButton />
                     <RemotePlayButton />
                     <SearchButton />
-                    <FavoritesButton />
-                    <TicketsButton />
+                    <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                        <FavoritesButton />
+                    </Box>
+                    <WatchLaterButton />
+                    <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                        <TicketsButton />
+                    </Box>
                 </>
             )}
             centerContent={!isDrawerAvailable && !isPublicPath && (

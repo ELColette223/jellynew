@@ -70,6 +70,18 @@ db.exec(`
         created_at   DATETIME DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_reports_created ON content_reports (created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS watch_later (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    TEXT    NOT NULL,
+        item_id    TEXT    NOT NULL,
+        item_title TEXT    NOT NULL,
+        item_type  TEXT,
+        item_year  INTEGER,
+        added_at   DATETIME DEFAULT (datetime('now')),
+        UNIQUE(user_id, item_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_watch_later_user ON watch_later (user_id);
 `);
 
 // Safe migration for existing DBs

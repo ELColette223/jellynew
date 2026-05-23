@@ -830,22 +830,28 @@ function buildCard(index, item, apiClient, options) {
             overlayPlayButton = item.MediaType === 'Video';
         }
 
-        const btnCssClass = 'cardOverlayButton cardOverlayButton-br itemAction';
+        const btnCssClass = 'cardOverlayButton itemAction';
 
         if (options.centerPlayButton) {
-            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass} cardOverlayButton-centered" data-action="${ItemAction.Play}" title="${globalize.translate('Play')}"><span class="material-icons cardOverlayButtonIcon play_arrow" aria-hidden="true"></span></button>`;
+            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass} cardOverlayButton-br cardOverlayButton-centered" data-action="${ItemAction.Play}" title="${globalize.translate('Play')}"><span class="material-icons cardOverlayButtonIcon play_arrow" aria-hidden="true"></span></button>`;
         }
 
+        let brButtons = '';
+
         if (overlayPlayButton && !item.IsPlaceHolder && (item.LocationType !== 'Virtual' || !item.MediaType || item.Type === 'Program') && item.Type !== 'Person') {
-            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Play}" title="${globalize.translate('Play')}"><span class="material-icons cardOverlayButtonIcon play_arrow" aria-hidden="true"></span></button>`;
+            brButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Play}" title="${globalize.translate('Play')}"><span class="material-icons cardOverlayButtonIcon play_arrow" aria-hidden="true"></span></button>`;
         }
 
         if (options.overlayMoreButton) {
-            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Menu}" title="${globalize.translate('ButtonMore')}"><span class="material-icons cardOverlayButtonIcon more_vert" aria-hidden="true"></span></button>`;
+            brButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Menu}" title="${globalize.translate('ButtonMore')}"><span class="material-icons cardOverlayButtonIcon more_vert" aria-hidden="true"></span></button>`;
         }
 
-        if (options.context === 'home' && item.UserData && item.UserData.PlaybackPositionTicks > 0) {
-            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.HideFromResume}" title="${globalize.translate('HideFromResume')}"><span class="material-icons cardOverlayButtonIcon hide_source" aria-hidden="true"></span></button>`;
+        if (options.showHideFromResume && item.UserData && item.UserData.PlaybackPositionTicks > 0) {
+            brButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.HideFromResume}" title="${globalize.translate('HideFromResume')}"><span class="material-icons cardOverlayButtonIcon hide_source" aria-hidden="true"></span></button>`;
+        }
+
+        if (brButtons) {
+            overlayButtons += `<div class="cardOverlayButton-br flex">${brButtons}</div>`;
         }
     }
 
@@ -1024,7 +1030,7 @@ function getHoverMenuHtml(item, action, options) {
         html += `<button is="emby-ratingbutton" type="button" data-action="${ItemAction.None}" class="${btnCssClass}" data-id="${item.Id}" data-serverid="${item.ServerId}" data-itemtype="${item.Type}" data-likes="${likes}" data-isfavorite="${userData.IsFavorite}"><span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover favorite" aria-hidden="true"></span></button>`;
     }
 
-    if (options && options.context === 'home' && item.UserData && item.UserData.PlaybackPositionTicks > 0) {
+    if (options && options.showHideFromResume && item.UserData && item.UserData.PlaybackPositionTicks > 0) {
         html += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.HideFromResume}" title="${globalize.translate('HideFromResume')}"><span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover hide_source" aria-hidden="true"></span></button>`;
     }
 

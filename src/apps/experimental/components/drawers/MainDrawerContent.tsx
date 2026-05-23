@@ -1,5 +1,8 @@
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import Favorite from '@mui/icons-material/Favorite';
 import Home from '@mui/icons-material/Home';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import Badge from '@mui/material/Badge';
 import Divider from '@mui/material/Divider';
 import Icon from '@mui/material/Icon';
 import List from '@mui/material/List';
@@ -9,6 +12,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import React from 'react';
+
+import { useTicketNotifications } from 'apps/experimental/features/tickets/hooks/useTicketNotifications';
+import { useWatchLaterCount } from 'apps/experimental/features/watchlater/hooks/useWatchLater';
 import { useLocation } from 'react-router-dom';
 
 import ListItemLink from 'components/ListItemLink';
@@ -24,6 +30,8 @@ import DrawerHeaderLink from './DrawerHeaderLink';
 const MainDrawerContent = () => {
     const { user } = useApi();
     const location = useLocation();
+    const watchLaterCount = useWatchLaterCount();
+    const { unreadCount: ticketsUnreadCount } = useTicketNotifications();
     const { data: userViewsData } = useUserViews({ userId: user?.Id });
     const userViews = userViewsData?.Items || [];
     const webConfig = useWebConfig();
@@ -51,6 +59,36 @@ const MainDrawerContent = () => {
                             <Favorite />
                         </ListItemIcon>
                         <ListItemText primary={globalize.translate('Favorites')} />
+                    </ListItemLink>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemLink to='/watchlater'>
+                        <ListItemIcon>
+                            <Badge
+                                badgeContent={watchLaterCount}
+                                color='primary'
+                                max={99}
+                                invisible={watchLaterCount === 0}
+                            >
+                                <WatchLaterIcon />
+                            </Badge>
+                        </ListItemIcon>
+                        <ListItemText primary='Assistir Mais Tarde' />
+                    </ListItemLink>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemLink to='/tickets'>
+                        <ListItemIcon>
+                            <Badge
+                                badgeContent={ticketsUnreadCount}
+                                color='error'
+                                max={99}
+                                invisible={ticketsUnreadCount === 0}
+                            >
+                                <ConfirmationNumberIcon />
+                            </Badge>
+                        </ListItemIcon>
+                        <ListItemText primary='Pedidos de Conteúdo' />
                     </ListItemLink>
                 </ListItem>
             </List>

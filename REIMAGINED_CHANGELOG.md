@@ -15,6 +15,8 @@ Reimagined Changelog
 [ADDED] - Recommendation engine with 7 personalised picks per session based on watch history
 [ADDED] - "Ignore from Continue Watching" button on resume cards to remove an item from the resume list
 [ADDED] - "Report content issue" button on item detail page to alert the admin via email about playback problems and log reports in a dedicated admin dashboard
+[ADDED] - "Watch Later" (Assistir Mais Tarde) feature, allowing users to save media items from the detail page or hero carousel to a dedicated list page accessible from the side menu and toolbar
+[ADDED] - Touch gesture support (horizontal swipe) on the home screen hero carousel for easier mobile navigation
 [CHANGED] - Home screen section order: "Recentes" now appears before "Continuar assistindo"
 [CHANGED] - "Recentes" sub-sections now always show Movies first, then TV Shows
 [CHANGED] - App toolbar reorganised to accommodate new buttons
@@ -24,6 +26,7 @@ Reimagined Changelog
 [CHANGED] - Dev server build process and configuration to avoid compilation hangs on Windows
 [CHANGED] - Profile avatar icon size and spacing in the top toolbar to look more proportional
 [CHANGED] - User view navigation buttons hover and active states to be theme-aware and prevent white/harsh hover backgrounds
+[CHANGED] - App toolbar responsiveness improved by hiding secondary action buttons on smaller mobile screens while keeping the new Watch Later button accessible
 [FIXED] - SSE ticket events endpoint no longer returns HTML in production when token validation fails or times out
 [FIXED] - Content reports for series episodes now show the series name and season/episode numbers (e.g. Series - S01E01 - Title) in the title instead of only the episode name.
 [FIXED] - Admin email notifications for tickets and reports now fallback to SMTP_ADMIN_EMAIL or SMTP_USER if the admin email setting is not configured.

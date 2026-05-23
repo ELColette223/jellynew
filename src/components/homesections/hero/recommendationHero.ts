@@ -22,6 +22,11 @@ import { ServerConnections } from 'lib/jellyfin-apiclient';
 import { appRouter } from 'components/router/appRouter';
 import { getItemBackdropImageUrl } from 'utils/jellyfin-apiclient/backdropImage';
 import { buildHeroPool, clearShownHistory, HERO_POOL_SIZE } from './recommendationEngine';
+import {
+    addToWatchLater,
+    fetchWatchLaterStatus,
+    removeFromWatchLater
+} from 'apps/experimental/features/watchlater/api';
 
 import './recommendationHero.scss';
 
@@ -114,6 +119,42 @@ async function fetchTrailerUrl(
     return null;
 }
 
+/** Attaches horizontal swipe detection to the hero container. */
+function attachSwipeHandler(container: HTMLElement) {
+    let startX = 0;
+    let startY = 0;
+
+    container.addEventListener('touchstart', (e: TouchEvent) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e: TouchEvent) => {
+        const dx = Math.abs(e.touches[0].clientX - startX);
+        const dy = Math.abs(e.touches[0].clientY - startY);
+        // Só bloqueia o scroll da página se o gesto é predominantemente horizontal
+        if (dx > dy && dx > 10) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    container.addEventListener('touchend', (e: TouchEvent) => {
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+
+        if (!state.items.length) return;
+        const relativeStep = (state.currentIndex - state.startIndex + state.items.length) % state.items.length;
+        if (dx < 0) {
+            // Swipe para esquerda → próximo slide
+            goToStep((relativeStep + 1) % state.items.length);
+        } else {
+            // Swipe para direita → slide anterior
+            goToStep((relativeStep - 1 + state.items.length) % state.items.length);
+        }
+    }, { passive: true });
+}
+
 /** Builds the hero DOM inside `container`. */
 function renderHeroShell(container: HTMLElement) {
     container.innerHTML = `
@@ -133,6 +174,9 @@ function renderHeroShell(container: HTMLElement) {
                     <button is="emby-button" class="raised heroMoreInfo">
                         <span class="material-icons info" aria-hidden="true"></span>
                         <span>${globalize.translate('MoreInfo')}</span>
+                    </button>
+                    <button class="heroWatchLaterIcon" data-in-watch-later="false" aria-label="Assistir Mais Tarde" title="Assistir Mais Tarde">
+                        <span class="material-icons">watch_later</span>
                     </button>
                 </div>
             </div>
@@ -167,6 +211,15 @@ function goToStep(step: number) {
     state.currentIndex = absoluteIndex;
     const relativeStep = step % state.items.length;
     showSlide(relativeStep);
+}
+
+function updateWatchLaterBtn(btn: HTMLButtonElement, inWatchLater: boolean) {
+    btn.dataset.inWatchLater = String(inWatchLater);
+    const iconEl = btn.querySelector<HTMLElement>('.material-icons');
+    if (iconEl) iconEl.textContent = inWatchLater ? 'check_circle' : 'watch_later';
+    btn.classList.toggle('heroWatchLaterIcon--active', inWatchLater);
+    btn.title = inWatchLater ? 'Remover da lista' : 'Assistir Mais Tarde';
+    btn.setAttribute('aria-label', inWatchLater ? 'Remover da lista' : 'Assistir Mais Tarde');
 }
 
 /** Shows the slide at the given step relative to startIndex. */
@@ -214,6 +267,38 @@ async function showSlide(step: number) {
     if (moreInfoBtn) {
         moreInfoBtn.onclick = () => {
             appRouter.showItem(item, { context: 'home' });
+        };
+    }
+
+    // -- Watch Later --
+    const watchLaterBtn = state.container.querySelector<HTMLButtonElement>('.heroWatchLaterIcon');
+    if (watchLaterBtn && item.Id) {
+        const itemId = item.Id;
+
+        // Fetch current status asynchronously and reflect on the button
+        fetchWatchLaterStatus(itemId).then(({ inWatchLater }) => {
+            if (state.currentIndex !== absoluteIndex || !watchLaterBtn) return;
+            updateWatchLaterBtn(watchLaterBtn, inWatchLater);
+        }).catch(() => { /* keep default state */ });
+
+        watchLaterBtn.onclick = async () => {
+            const isIn = watchLaterBtn.dataset.inWatchLater === 'true';
+            try {
+                if (isIn) {
+                    await removeFromWatchLater(itemId);
+                    updateWatchLaterBtn(watchLaterBtn, false);
+                } else {
+                    await addToWatchLater({
+                        item_id: itemId,
+                        item_title: item.Name ?? '',
+                        item_type: item.Type ?? undefined,
+                        item_year: item.ProductionYear ?? undefined
+                    });
+                    updateWatchLaterBtn(watchLaterBtn, true);
+                }
+            } catch {
+                // Silently ignore — user feedback not required for a secondary action
+            }
         };
     }
 
@@ -294,6 +379,7 @@ export async function loadHero(
     state.container = heroContainer;
 
     renderHeroShell(heroContainer);
+    attachSwipeHandler(heroContainer);
 
     // Show a loading state until data arrives
     heroContainer.classList.add('heroRecommendationContainer--loading');

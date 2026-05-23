@@ -67,6 +67,7 @@ function getItemsToResumeHtmlFn(
             showDetailsMenu: true,
             overlayPlayButton: true,
             context: 'home',
+            showHideFromResume: true,
             centerText: !cardLayout,
             allowBottomPadding: false,
             cardLayout: cardLayout,

@@ -39,6 +39,11 @@ import Dashboard from 'utils/dashboard';
 import Events from 'utils/events';
 import { getItemBackdropImageUrl } from 'utils/jellyfin-apiclient/backdropImage';
 import { toApi } from 'utils/jellyfin-apiclient/compat';
+import {
+    addToWatchLater,
+    fetchWatchLaterStatus,
+    removeFromWatchLater
+} from 'apps/experimental/features/watchlater/api';
 
 import 'elements/emby-itemscontainer/emby-itemscontainer';
 import 'elements/emby-checkbox/emby-checkbox';
@@ -673,6 +678,17 @@ function reloadFromItem(instance, page, params, item, user) {
         hideAll(page, 'btnReportContent', true);
     } else {
         hideAll(page, 'btnReportContent', false);
+    }
+
+    const watchLaterBtn = page.querySelector('.btnWatchLater');
+    const nonWatchLaterTypes = ['Person', 'Genre', 'MusicGenre', 'MusicArtist', 'Studio', 'BoxSet', 'Playlist'];
+    if (item.Id && nonWatchLaterTypes.indexOf(item.Type) === -1) {
+        watchLaterBtn && watchLaterBtn.classList.remove('hide');
+        fetchWatchLaterStatus(item.Id)
+            .then(({ inWatchLater }) => updateWatchLaterButton(watchLaterBtn, inWatchLater))
+            .catch(() => { /* no-op */ });
+    } else {
+        watchLaterBtn && watchLaterBtn.classList.add('hide');
     }
 
     autoFocus(page);
@@ -2002,6 +2018,38 @@ export default function (view, params) {
         setTrailerButtonVisibility(view, currentItem);
     }
 
+    function updateWatchLaterButton(btn, inWatchLater) {
+        if (!btn) return;
+        btn.dataset.inWatchLater = String(inWatchLater);
+        const icon = btn.querySelector('.material-icons');
+        if (icon) {
+            icon.classList.remove('watch_later', 'check_circle');
+            icon.classList.add(inWatchLater ? 'check_circle' : 'watch_later');
+        }
+        btn.title = inWatchLater ? 'Remover da lista' : 'Assistir Mais Tarde';
+    }
+
+    function onWatchLaterClick() {
+        if (!currentItem || !currentItem.Id) return;
+        const btn = view.querySelector('.btnWatchLater');
+        const isIn = btn && btn.dataset.inWatchLater === 'true';
+
+        if (isIn) {
+            removeFromWatchLater(currentItem.Id)
+                .then(() => updateWatchLaterButton(btn, false))
+                .catch(() => { /* no-op */ });
+        } else {
+            addToWatchLater({
+                item_id: currentItem.Id,
+                item_title: currentItem.Name || '',
+                item_type: currentItem.Type,
+                item_year: currentItem.ProductionYear
+            })
+                .then(() => updateWatchLaterButton(btn, true))
+                .catch(() => { /* no-op */ });
+        }
+    }
+
     function onReportContentClick() {
         const dialogContainer = document.createElement('div');
         document.body.appendChild(dialogContainer);
@@ -2081,6 +2129,7 @@ export default function (view, params) {
         });
         bindAll(view, '.btnMoreCommands', 'click', onMoreCommandsClick);
         bindAll(view, '.btnReportContent', 'click', onReportContentClick);
+        bindAll(view, '.btnWatchLater', 'click', onWatchLaterClick);
         view.querySelector('.selectSource').addEventListener('change', function () {
             renderVideoSelections(view, self._currentPlaybackMediaSources);
             renderAudioSelections(view, self._currentPlaybackMediaSources);

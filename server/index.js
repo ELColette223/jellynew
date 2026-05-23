@@ -11,6 +11,7 @@ const ticketRoutes = require('./routes/tickets');
 const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
 const reportRoutes = require('./routes/reports');
+const watchLaterRoutes = require('./routes/watchlater');
 
 const PORT = parseInt(process.env.TICKET_SERVER_PORT || '3001', 10);
 
@@ -43,6 +44,7 @@ app.use('/api/admin/tickets', adminRoutes);
 app.use('/api/admin/settings', settingsRoutes);
 app.use('/api/reports', reportRoutes.client);
 app.use('/api/admin/reports', reportRoutes.admin);
+app.use('/api/watchlater', watchLaterRoutes);
 
 // Production: serve the compiled frontend and fall back to index.html for
 // client-side routes (SPA).

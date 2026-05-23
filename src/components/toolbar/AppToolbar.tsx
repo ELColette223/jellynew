@@ -52,8 +52,8 @@ const AppToolbar: FC<PropsWithChildren<AppToolbarProps>> = ({
                     sm: 'max(24px, env(safe-area-inset-left))'
                 },
                 pr: {
-                    xs: 'max(16px, env(safe-area-inset-left))',
-                    sm: 'max(24px, env(safe-area-inset-left))'
+                    xs: 'max(16px, env(safe-area-inset-right))',
+                    sm: 'max(24px, env(safe-area-inset-right))'
                 }
             }}
         >
